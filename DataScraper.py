@@ -3,6 +3,10 @@ from requests.exceptions import RequestException
 from contextlib import closing
 from bs4 import BeautifulSoup
 
+def main():
+    print('Working...')
+    print(get_price())
+
 def get_price():
     """
     Downloads the page where the list of mathematicians is found
@@ -14,9 +18,8 @@ def get_price():
     if response is not None:
         html = BeautifulSoup(response, 'html.parser')
         marketPriceDiv = html.find('div', attrs={'class':'price-point--market'})
-        marketPriceTD = marketPriceDiv.find('td', attrs={'td':'price-point__data'})
+        marketPriceTD = marketPriceDiv.find('td', attrs={'class':'price-point__data'})
         marketPrice = marketPriceTD.string.strip()
-        print(marketPrice)
         return marketPrice
         # names = set()
         # for li in html.select('li'):
@@ -63,3 +66,5 @@ def log_error(e):
     make it do anything.
     """
     print(e)
+
+main()
