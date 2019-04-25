@@ -2,16 +2,9 @@ from requests import get
 from requests.exceptions import RequestException
 from contextlib import closing
 from bs4 import BeautifulSoup
-
-def main():
-    print('Working...')
-    print(get_price())
+import logging
 
 def get_price():
-    """
-    Downloads the page where the list of mathematicians is found
-    and returns a list of strings, one per mathematician
-    """
     url = 'https://shop.tcgplayer.com/magic/legends/the%20tabernacle%20at%20pendrell%20vale'
     response = simple_get(url)
 
@@ -21,12 +14,6 @@ def get_price():
         marketPriceTD = marketPriceDiv.find('td', attrs={'class':'price-point__data'})
         marketPrice = marketPriceTD.string.strip()
         return marketPrice
-        # names = set()
-        # for li in html.select('li'):
-        #     for name in li.text.split('\n'):
-        #         if len(name) > 0:
-        #             names.add(name.strip())
-        # return list(names)
 
     # Raise an exception if we failed to get any data from the url
     raise Exception('Error retrieving contents at {}'.format(url))
@@ -60,11 +47,10 @@ def is_good_response(resp):
 
 
 def log_error(e):
-    """
-    It is always a good idea to log errors. 
-    This function just prints them, but you can
-    make it do anything.
-    """
-    print(e)
+    logging.basicConfig(filename='error.log', format='%(asctime)s %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p')
+    logging.error(e)
 
-main()
+if __name__ == '__main__':
+    print('Working...')
+    print(get_price())
+    print('Done')
