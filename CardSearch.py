@@ -1,5 +1,6 @@
 import requests
 import json
+import matplotlib.pyplot as plt
 
 def getAllCards():
     print('Getting Json...')
@@ -12,18 +13,37 @@ def getAllCards():
     print('Creating Object...')
     
     allCards = allCardsJSON.json()
+    allCards = dict((k.lower(),v) for k,v in allCards.items())
 
     return allCards
     
 
-def getCardPrice(cardName):
-    allCards = getAllCards()
+def getCardPrice(cardName, cardDict):
+    if cardName not in cardDict:
+        print('Card Name Not Found')
+        return False
 
-    if 'prices' in allCards[cardName]:
-        print(allCards[cardName]['prices'])
+    if 'prices' in cardDict[cardName]:
+        return (cardDict[cardName]['prices'])
     else: 
         print('Prices not found')
 
+def createGraph(priceObj):
+    dates = list(priceObj.keys())
+    prices = list(priceObj.values())
+    
+    plt.plot(dates,prices)
+    plt.show()
+
 if __name__ == '__main__':
-    cardName = input('Enter Card Name:')
-    getCardPrice(cardName)
+    allCards = getAllCards()
+
+    while True:
+        cardName = input('Enter Card Name:').lower()
+        priceObject = getCardPrice(cardName, allCards)
+
+        if priceObject:
+            createGraph(priceObject['paper'])
+        
+        if input('Continue? (Y/N)').lower() == 'n':
+            break
