@@ -24,7 +24,7 @@ def getCardPrice(cardName, cardDict):
         return False
 
     if 'prices' in cardDict[cardName]:
-        return (cardDict[cardName]['prices'])
+        return(cardDict[cardName]['prices']['paper'])
     else: 
         print('Prices not found')
 
@@ -32,8 +32,9 @@ def createGraph(priceObj):
     dates = list(priceObj.keys())
     prices = list(priceObj.values())
     
+    plt.xticks(rotation=90)
     plt.plot(dates,prices)
-    plt.show()
+    plt.savefig('priceGraph.png')
 
 if __name__ == '__main__':
     allCards = getAllCards()
@@ -43,7 +44,7 @@ if __name__ == '__main__':
         priceObject = getCardPrice(cardName, allCards)
 
         if priceObject:
-            createGraph(priceObject['paper'])
+            createGraph(priceObject)
         
         if input('Continue? (Y/N)').lower() == 'n':
             break
