@@ -1,6 +1,8 @@
 import requests
 import json
 import matplotlib.pyplot as plt
+import sqlite3
+from sqlite3 import Error
 
 def getAllCards():
     print('Getting Json...')
@@ -16,17 +18,31 @@ def getAllCards():
     allCards = dict((k.lower(),v) for k,v in allCards.items())
 
     return allCards
+
+def createConnection():
+    try:
+        conn = sqlite3.connect('AllSets.sqlite')
+        return conn
+    except Error as e:
+        print(e)
     
+    return None
 
-def getCardPrice(cardName, cardDict):
-    if cardName not in cardDict:
-        print('Card Name Not Found')
-        return False
+def getCardPrice(conn, setName, cardName, priceType):
+    cur = conn.cursor()
+    cur.execute("SELECT prices FROM sets INNER JOIN cards ON setCode=code WHERE sets.name='{}' and cards.name='{}'".format(setName,cardName))
+    rows = cur.fetchall()
 
-    if 'prices' in cardDict[cardName]:
-        return(cardDict[cardName]['prices']['paper'])
-    else: 
-        print('Prices not found')
+    for row in rows:
+        print(row)
+    # if cardName not in cardDict:
+    #     print('Card Name Not Found')
+    #     return False
+
+    # if 'prices' in cardDict[cardName]:
+    #     return(cardDict[cardName]['prices']['paper'])
+    # else: 
+    #     print('Prices not found')
 
 def createGraph(priceObj):
     dates = list(priceObj.keys())
@@ -37,14 +53,25 @@ def createGraph(priceObj):
     plt.savefig('priceGraph.png')
 
 if __name__ == '__main__':
-    allCards = getAllCards()
+    conn =  createConnection()
 
     while True:
-        cardName = input('Enter Card Name:').lower()
-        priceObject = getCardPrice(cardName, allCards)
+        setName = input('Enter Set Name: ')#.lower()
+        cardName = input('Enter Card Name: ')#.lower()
+        priceType = input('(R)egular or (F)oil? ')
 
-        if priceObject:
-            createGraph(priceObject)
+        if priceType == 'F':
+            priceType = 'paperFoil'
+        else:
+            priceType = 'paper'
+
+        # priceObject =
+        getCardPrice(conn, setName, cardName, priceType)
+
+        # if priceObject:
+        #     createGraph(priceObject)
         
         if input('Continue? (Y/N)').lower() == 'n':
             break
+        
+    conn.close()
