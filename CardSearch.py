@@ -1,27 +1,16 @@
 import requests
-import json
 import matplotlib.pyplot as plt
 import sqlite3
 from sqlite3 import Error
-
-def getAllCards():
-    print('Getting Json...')
-
-    try:
-        allCardsJSON = requests.get('https://mtgjson.com/json/AllCards.json')
-    except:
-        print('There was an error getting json')
-
-    print('Creating Object...')
-    
-    allCards = allCardsJSON.json()
-    allCards = dict((k.lower(),v) for k,v in allCards.items())
-
-    return allCards
+import ast
 
 def createConnection():
+    """ 
+    Creates connection to AllSets.sqlite
+    """
     try:
         conn = sqlite3.connect('AllSets.sqlite')
+        conn.row_factory = sqlite3.Row
         return conn
     except Error as e:
         print(e)
@@ -29,22 +18,24 @@ def createConnection():
     return None
 
 def getCardPrice(conn, setName, cardName, priceType):
+    """ 
+    Uses sqlite connection to query card prices of given Set and Card Name
+    """
     cur = conn.cursor()
-    cur.execute("SELECT prices FROM sets INNER JOIN cards ON setCode=code WHERE sets.name='{}' and cards.name='{}'".format(setName,cardName))
-    rows = cur.fetchall()
+    cur.execute("SELECT prices FROM sets INNER JOIN cards ON setCode=code WHERE sets.name=? and cards.name=?", (setName,cardName))
+    rows = cur.fetchone()
 
-    for row in rows:
-        print(row)
-    # if cardName not in cardDict:
-    #     print('Card Name Not Found')
-    #     return False
+    if not rows:
+        print("No results found")
+        return
 
-    # if 'prices' in cardDict[cardName]:
-    #     return(cardDict[cardName]['prices']['paper'])
-    # else: 
-    #     print('Prices not found')
+    pricesDict = ast.literal_eval(rows[0])
+    return(pricesDict[priceType])
 
 def createGraph(priceObj):
+    """
+    Plots a price object and saves as priceGraph.png
+    """
     dates = list(priceObj.keys())
     prices = list(priceObj.values())
     
@@ -65,11 +56,10 @@ if __name__ == '__main__':
         else:
             priceType = 'paper'
 
-        # priceObject =
-        getCardPrice(conn, setName, cardName, priceType)
+        priceObject = getCardPrice(conn, setName, cardName, priceType)
 
-        # if priceObject:
-        #     createGraph(priceObject)
+        if priceObject:
+            createGraph(priceObject)
         
         if input('Continue? (Y/N)').lower() == 'n':
             break
