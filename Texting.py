@@ -6,10 +6,13 @@ app = Flask(__name__)
 
 @app.route('/sms', methods=['GET','POST'])
 def sms():
-    allCards = CardSearch.getAllCards()
-    cardName = request.form['Body'].lower()
-    priceObj = CardSearch.getCardPrice(cardName,allCards)
-    CardSearch.createGraph(priceObj)
+    cardParams = request.form['Body'].split(",")
+    cardName =  cardParams[0]
+    setName = cardParams[1]
+    priceType =  cardParams[2]
+    
+    priceObj = CardSearch.getCardPrice(setName, cardName, priceType)
+    # CardSearch.createGraph(priceObj)
 
     resp = MessagingResponse()
     

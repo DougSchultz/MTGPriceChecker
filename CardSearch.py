@@ -17,10 +17,11 @@ def createConnection():
     
     return None
 
-def getCardPrice(conn, setName, cardName, priceType):
+def getCardPrice(setName, cardName, priceType):
     """ 
     Uses sqlite connection to query card prices of given Set and Card Name
     """
+    conn = createConnection()
     cur = conn.cursor()
     cur.execute("SELECT prices FROM sets INNER JOIN cards ON setCode=code WHERE sets.name=? and cards.name=?", (setName,cardName))
     rows = cur.fetchone()
@@ -30,6 +31,8 @@ def getCardPrice(conn, setName, cardName, priceType):
         return
 
     pricesDict = ast.literal_eval(rows[0])
+    conn.close()
+
     return(pricesDict[priceType])
 
 def createGraph(priceObj):
@@ -42,26 +45,18 @@ def createGraph(priceObj):
     plt.xticks(rotation=90)
     plt.plot(dates,prices)
     plt.savefig('priceGraph.png')
+    plt.show()
 
 if __name__ == '__main__':
-    conn =  createConnection()
-
     while True:
-        setName = input('Enter Set Name: ')#.lower()
-        cardName = input('Enter Card Name: ')#.lower()
-        priceType = input('(R)egular or (F)oil? ')
+        setName = input('Enter Set Name: ')
+        cardName = input('Enter Card Name: ')
+        priceType = input('paper or paperFoil? ')
 
-        if priceType == 'F':
-            priceType = 'paperFoil'
-        else:
-            priceType = 'paper'
-
-        priceObject = getCardPrice(conn, setName, cardName, priceType)
+        priceObject = getCardPrice(setName, cardName, priceType)
 
         if priceObject:
             createGraph(priceObject)
         
         if input('Continue? (Y/N)').lower() == 'n':
             break
-        
-    conn.close()
